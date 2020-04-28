@@ -1,8 +1,8 @@
 package com.projekt.mysql.api;
 
+import com.projekt.mysql.controller.BillController;
 import com.projekt.mysql.model.Adress;
 import com.projekt.mysql.model.Bill;
-import com.projekt.controller.BillController;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
@@ -24,6 +24,7 @@ public class BillServiceTest2 {
 
     @InjectMocks
     private BillController billController;
+
 
     @Mock
     private BillService billServiceMock;

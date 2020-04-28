@@ -1,7 +1,7 @@
 package com.projekt.mysql.api;
 
+import com.projekt.mysql.controller.BillController;
 import com.projekt.mysql.model.Bill;
-import com.projekt.controller.BillController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
