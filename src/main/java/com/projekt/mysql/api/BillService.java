@@ -18,17 +18,20 @@ public class BillService {
     private EntityManager em;
 
     public List<Bill> getAllBills() {
-        List<Bill> list = null;
         try {
-            //list = em.createQuery("select r from Bill r", Bill.class).getResultList();
+            List<Bill> list = null;
             list = em.createNamedQuery("bill.getAllBills", Bill.class).getResultList();
-        } catch (IllegalArgumentException e) {
+            return list;
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim select der Rechnung", e
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
-        return list;
+    }
+
+    public List<Bill> findAllByFirstname(String firstname) {
+        return em.createNamedQuery("bill.findByFirstname", Bill.class).setParameter(1, firstname).getResultList();
     }
 
     @Transactional
@@ -36,19 +39,12 @@ public class BillService {
         List<Bill> list = null;
         try {
             em.persist(bill.getAdress());
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim Hinzufügen der Adresse", e
-            );
-        }
-        bill.getAdress().setAdressId(em.find(Adress.class, bill.getAdress().getAdressId()).getAdressId());
-        try {
+            bill.getAdress().setAdressId(em.find(Adress.class, bill.getAdress().getAdressId()).getAdressId());
             em.persist(bill);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim Hinzufügen der Rechnung", e
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
         list = getAllBills();
@@ -58,24 +54,19 @@ public class BillService {
 
     @Transactional
     public void deleteById(int id) {
-        Bill matchedBill = null;
-        matchedBill = em.find(Bill.class, id);
-        if (matchedBill == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Keine Rechnung mit id " + id + " gefunden"
-            );
-        } else {
-            try {
+        try {
+            Bill matchedBill = null;
+            matchedBill = em.find(Bill.class, id);
+            if (matchedBill == null) {
+            } else {
                 matchedBill.setBillId(6);
                 em.remove(matchedBill);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                throw new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim löschen der Rechnung mit id: " + id, e
-                );
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
+            );
         }
     }
-
-
 }

@@ -7,6 +7,7 @@ import java.sql.Date;
 @Table(name="bill")
 @NamedQueries({
         @NamedQuery(name="bill.getAllBills",query="select b from Bill b"),
+        @NamedQuery(name="bill.findByFirstname",query="select b from Bill b where b.firstname = ?1 ")
 })
 public class Bill {
 

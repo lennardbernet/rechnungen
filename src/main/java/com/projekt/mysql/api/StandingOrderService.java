@@ -10,6 +10,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class StandingOrderService {
@@ -18,16 +19,16 @@ public class StandingOrderService {
     private EntityManager em;
 
     public List<StandingOrder> getAllStandingOrders() {
-        List<StandingOrder> list = null;
         try {
+            List<StandingOrder> list = null;
             list = em.createQuery("select d from StandingOrder d", StandingOrder.class).getResultList();
-        } catch (IllegalArgumentException e) {
+            return list;
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim select der Daueraufträge", e
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
-        return list;
     }
 
     @Transactional
@@ -35,20 +36,12 @@ public class StandingOrderService {
         List<StandingOrder> list = null;
         try {
             em.persist(standingOrder.getAdress());
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim Hinzufügen der Adresse", e
-            );
-        }
-
-        standingOrder.getAdress().setAdressId(em.find(Adress.class, standingOrder.getAdress().getAdressId()).getAdressId());
-        try {
+            standingOrder.getAdress().setAdressId(em.find(Adress.class, standingOrder.getAdress().getAdressId()).getAdressId());
             em.persist(standingOrder);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim Hinzufügen des Dauerauftrages", e
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
         list = getAllStandingOrders();
@@ -57,22 +50,18 @@ public class StandingOrderService {
 
     @Transactional
     public void deleteById(int id) {
-        StandingOrder matchedStandingOrder = em.find(StandingOrder.class, id);
-        if (matchedStandingOrder == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Kein Dauerauftrag mit id " + id + "gefunden"
-            );
-        } else {
-            try {
+        try {
+            StandingOrder matchedStandingOrder = em.find(StandingOrder.class, id);
+            if (matchedStandingOrder == null) {
+            } else {
                 em.remove(matchedStandingOrder);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                throw new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR, "Fehler beim Löschen des Dauerauftrages mit id " + id, e
-                );
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
+            );
         }
-
     }
 
     @Transactional
@@ -80,24 +69,17 @@ public class StandingOrderService {
         StandingOrder matchedStandingOrder;
         try {
             matchedStandingOrder = em.find(StandingOrder.class, id);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Dauerauftrag mit ID " + id + " nicht gefunden", e
-            );
-        }
-        int executions = matchedStandingOrder.getExecutions();
-        try {
+            int executions = matchedStandingOrder.getExecutions();
             if (executions <= 1) {
                 em.remove(matchedStandingOrder);
             } else {
                 matchedStandingOrder.setExecutions(executions - 1);
                 em.merge(matchedStandingOrder);
             }
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR, "Fehler bei DB Zugriff", e
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
     }
