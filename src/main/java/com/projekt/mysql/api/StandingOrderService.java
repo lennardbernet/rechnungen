@@ -33,19 +33,19 @@ public class StandingOrderService {
 
     @Transactional
     public List<StandingOrder> saveStandingOrder(StandingOrder standingOrder) {
-        List<StandingOrder> list = null;
         try {
+            List<StandingOrder> list = null;
             em.persist(standingOrder.getAdress());
             standingOrder.getAdress().setAdressId(em.find(Adress.class, standingOrder.getAdress().getAdressId()).getAdressId());
             em.persist(standingOrder);
+            list = getAllStandingOrders();
+            return list;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
-        list = getAllStandingOrders();
-        return list;
     }
 
     @Transactional
@@ -66,8 +66,8 @@ public class StandingOrderService {
 
     @Transactional
     public void executeStandingOrder(int id) {
-        StandingOrder matchedStandingOrder;
         try {
+            StandingOrder matchedStandingOrder;
             matchedStandingOrder = em.find(StandingOrder.class, id);
             int executions = matchedStandingOrder.getExecutions();
             if (executions <= 1) {

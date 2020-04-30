@@ -46,8 +46,17 @@ public class BillController {
     }
 
     @GetMapping(value = "findByFirstname/{firstname}")
-    public ResponseEntity<List<Bill>> getAllBills(@PathVariable("firstname") String firstname) {
-        return ok(billService.findAllByFirstname(firstname));
+    public ResponseEntity<List<Bill>> findByFirstname(@PathVariable("firstname") String firstname) {
+        try {
+            List<Bill> bills = billService.findByFirstname(firstname);
+            if(bills == null){
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            } else {
+                return ResponseEntity.status(HttpStatus.OK).body(bills);
+            }
+        }catch (Exception e){
+            throw e;
+        }
     }
 
     @PostMapping(value = "saveBill",

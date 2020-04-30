@@ -30,26 +30,32 @@ public class BillService {
         }
     }
 
-    public List<Bill> findAllByFirstname(String firstname) {
-        return em.createNamedQuery("bill.findByFirstname", Bill.class).setParameter(1, firstname).getResultList();
+    public List<Bill> findByFirstname(String firstname) {
+        try {
+            return em.createNamedQuery("bill.findByFirstname", Bill.class).setParameter(1, firstname).getResultList();
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
+            );
+        }
     }
 
     @Transactional
     public List<Bill> saveBill(Bill bill) {
-        List<Bill> list = null;
         try {
+            List<Bill> list = null;
             em.persist(bill.getAdress());
             bill.getAdress().setAdressId(em.find(Adress.class, bill.getAdress().getAdressId()).getAdressId());
             em.persist(bill);
+            list = getAllBills();
+            return list;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error, response code 500", e
             );
         }
-        list = getAllBills();
-        return list;
-
     }
 
     @Transactional
